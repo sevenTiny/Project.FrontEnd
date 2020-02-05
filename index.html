@@ -1,98 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="zxx">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <style type="text/css">
-        body,
-        html {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            font-family: "微软雅黑";
-        }
-
-        #allmap {
-            width: 100%;
-            height: 500px;
-        }
-
-        p {
-            margin-left: 5px;
-            font-size: 14px;
-        }
-    </style>
-    <script type="text/javascript"
-        src="http://api.map.baidu.com/api?v=2.0&ak=xt2N09s2k3ZrWRnphZbND6bliyqFUbsP"></script>
-    <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
-    <title>TravelMap</title>
+    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="keywords" content="" />
+    <!-- Custom Theme files -->
+    <link href="css/bootstrap.min.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/style.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <!-- online-fonts -->
+    <link href="http://fonts.googleapis.com/css?family=Amaranth:400,400i,700,700i" rel="stylesheet">
+    <link href="http://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
 </head>
 
 <body>
-    <div id="allmap"></div>
-    <p>点击标注点，可查看由纯文本构成的简单型信息窗口</p>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- header -->
+            <div class="col-lg-2" id="spy">
+                <div class="header-agile">
+                    <h1><a class="navbar-brand" href="index.html">T-Map</a></h1>
+                </div>
+                <ul class="nav nav-pills flex-column mt-lg-5">
+                    <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#glance">glance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">contact</a></li>
+                </ul>
+                <button type="button"
+                    class="btn btn-block mt-lg-5 mt-3 w3ls-btn p-1 btn-theme text-white  text-uppercase font-weight-bold"
+                    data-toggle="modal" aria-pressed="false" data-target="#exampleModal">
+                    Test
+                </button>
+            </div>
+            <!-- //header -->
+            <!-- main -->
+            <div class="col-lg-10 scrollspy-example pr-0" data-spy="scroll" data-target="#spy">
+                <div id="allmap" class="w3ls-banner d-flex  align-items-center justify-content-center"></div>
+            </div>
+            <!-- //main -->
+        </div>
+    </div>
+
+    <!-- modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cras ultricies ligula sed magna dictum porta auris
+                        blandita.</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="images/map.jpg" class="img-fluid" alt="" />
+                    <p class="text-left">
+                        Quisque velit nisi, pretium ut lacinia in, elementum id enim. Curabitur non nulla sit amet nisl
+                        tempus convallis quis ac
+                        lectus. Cras ultricies ligula sed magna dictum porta.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- // modal -->
+
+    <script src="js/jquery-2.2.3.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript"
+        src="http://api.map.baidu.com/api?v=2.0&ak=xt2N09s2k3ZrWRnphZbND6bliyqFUbsP"></script>
+    <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+    <script type="text/javascript" src="./datas/travelpoints.js"></script>
+    <script type="text/javascript">
+        var map = new BMap.Map("allmap");
+        //启动滚轮缩放
+        map.enableScrollWheelZoom();
+        //设置中心坐标和地图级别
+        map.centerAndZoom(new BMap.Point(105, 38), 5);
+
+        var top_left_control = new BMap.ScaleControl({ anchor: BMAP_ANCHOR_TOP_LEFT });// 左上角，添加比例尺
+        var top_left_navigation = new BMap.NavigationControl();  //左上角，添加默认缩放平移控件
+        map.addControl(top_left_control);
+        map.addControl(top_left_navigation);
+
+        jQuery(document).ready(function ($) {
+            draw()
+        });
+
+        //绘制覆盖物
+        function draw() {
+            //数据源
+            var datas = travelpoints
+
+            for (var j = 0; j < datas.length; j++) {
+                //点组
+                let group = datas[j]
+                //用于画线的点对象集合
+                let pois = []
+
+                for (var i = 0; i < group['points'].length; i++) {
+                    //描点
+                    let p = group['points'][i]
+
+                    let point = new BMap.Point(p['point'][0], p['point'][1]);
+                    pois.push(point)
+
+                    //---添加描点
+                    var marker = new BMap.Marker(point);
+
+                    let sContent =
+                        "<h4 style='margin:0 0 5px 0;padding:0.2em 0'>" + p['title'] + "</h4>" +
+                        "<img style='float:right;margin:4px' id='imgDemo" + i + "'src='" + p['img'] + "' width='139' height='104' title='" + p['title'] + "'/>" +
+                        "<p style='margin:0;line-height:1.5;font-size:13px;text-indent:2em'>" + p['content'] + "</p>" +
+                        "</div>";
+
+                    map.addOverlay(marker); //将点添加到地图中
+
+                    marker.addEventListener("click", function (e) {
+                        var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象 
+                        map.openInfoWindow(infoWindow, point); //开启信息窗口
+                    });
+
+                    //---添加标签
+                    if (i == 0 && group['title'] != null && group['title'] != '') {
+                        let opts = {
+                            position: point,    // 指定文本标注所在的地理位置
+                            offset: new BMap.Size(10, -20)    //设置文本偏移量
+                        }
+                        let label = new BMap.Label(group['title'], opts);  // 创建文本标注对象
+                        label.setStyle({
+                            color: group['line_color'],
+                            fontSize: "8px",
+                            height: "15px",
+                            lineHeight: "12px",
+                            fontFamily: "微软雅黑"
+                        });
+                        map.addOverlay(label);
+                    }
+                }
+
+                //---添加线
+                let polyline = new BMap.Polyline(pois, {
+                    enableEditing: false,//是否启用线编辑，默认为false
+                    enableClicking: false,//是否响应点击事件，默认为true
+                    // icons: [icons],
+                    strokeWeight: group["line_strokeWeight"],//折线的宽度，以像素为单位
+                    strokeOpacity: group['line_strokeOpacity'],//折线的透明度，取值范围0 - 1
+                    strokeColor: group['line_color'] //折线颜色
+                });
+
+                map.addOverlay(polyline);//增加折线
+            }
+        }
+    </script>
 </body>
 
 </html>
-<script type="text/javascript">
-    // 百度地图API功能	
-    var map = new BMap.Map("allmap");
-    map.enableScrollWheelZoom();
-    map.centerAndZoom(new BMap.Point(116.404, 39.915), 8);
-
-    var datas = [
-        {
-            'point_x': 116,
-            'point_y': 40,
-            'title': 'temp111',
-            'content': '11111',
-            'img': 'http://lbsyun.baidu.com/jsdemo/img/tianAnMen.jpg'
-        },
-        {
-            'point_x': 116,
-            'point_y': 40,
-            'title': 'temp222',
-            'content': '22222',
-            'img': 'http://lbsyun.baidu.com/jsdemo/img/tianAnMen.jpg'
-        },
-        {
-            'point_x': 116,
-            'point_y': 40,
-            'title': 'temp',
-            'content': '33333',
-            'img': 'http://lbsyun.baidu.com/jsdemo/img/tianAnMen.jpg'
-        },
-        {
-            'point_x': 116,
-            'point_y': 40,
-            'title': 'temp',
-            'content': '44444',
-            'img': 'http://lbsyun.baidu.com/jsdemo/img/tianAnMen.jpg'
-        },
-        {
-            'point_x': 116,
-            'point_y': 40,
-            'title': 'temp',
-            'content': '55555',
-            'img': 'http://lbsyun.baidu.com/jsdemo/img/tianAnMen.jpg'
-        }
-    ]
-
-    for (var i = 0; i < datas.length; i++) {
-        let point = new BMap.Point(datas[i]['point_x'], datas[i]['point_y'] + i * 0.3);
-        var marker = new BMap.Marker(point);
-
-        let sContent =
-            "<h4 style='margin:0 0 5px 0;padding:0.2em 0'>" + datas[i]['title'] + "</h4>" +
-            "<img style='float:right;margin:4px' id='imgDemo" + i + "'src='" + datas[i]['img'] + "' width='139' height='104' title='" + datas[i]['title'] + "'/>" +
-            "<p style='margin:0;line-height:1.5;font-size:13px;text-indent:2em'>" + datas[i]['content'] + "</p>" +
-            "</div>";
-
-        map.addOverlay(marker);
-        marker.addEventListener("click", function (e) {
-            var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象 
-            map.openInfoWindow(infoWindow, point); //开启信息窗口
-        });
-    }
-</script>
