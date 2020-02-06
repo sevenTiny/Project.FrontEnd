@@ -13,6 +13,21 @@
     <!-- online-fonts -->
     <link href="http://fonts.googleapis.com/css?family=Amaranth:400,400i,700,700i" rel="stylesheet">
     <link href="http://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
+    <style>
+        #tb_color_desc tr {
+            display: block;
+            margin-top: 5px;
+        }
+
+        #tb_color_desc .td1 {
+            width: 30px;
+        }
+
+        #tb_color_desc .td2 {
+            font-size: 10px;
+            padding-left: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -24,16 +39,17 @@
                     <h1><a class="navbar-brand" href="index.html">T-Map</a></h1>
                 </div>
                 <ul class="nav nav-pills flex-column mt-lg-5">
-                    <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about" data-toggle="modal" aria-pressed="false"
+                            data-target="#about">About</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
                     <li class="nav-item"><a class="nav-link" href="#glance">glance</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">contact</a></li> -->
                 </ul>
                 <button type="button"
                     class="btn btn-block mt-lg-5 mt-3 w3ls-btn p-1 btn-theme text-white  text-uppercase font-weight-bold"
                     data-toggle="modal" aria-pressed="false" data-target="#exampleModal">
-                    Test
+                    线路说明
                 </button>
             </div>
             <!-- //header -->
@@ -51,8 +67,28 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Cras ultricies ligula sed magna dictum porta auris
-                        blandita.</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">线路说明</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <table id="tb_color_desc">
+                        <!-- <tr>
+                            <td class="td1" style="background: #ff333f;"></td>
+                            <td class="td2">哈哈哈哈哈哈哈</td>
+                        </tr> -->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">关于 Travel Map</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -60,9 +96,7 @@
                 <div class="modal-body text-center">
                     <img src="images/map.jpg" class="img-fluid" alt="" />
                     <p class="text-left">
-                        Quisque velit nisi, pretium ut lacinia in, elementum id enim. Curabitur non nulla sit amet nisl
-                        tempus convallis quis ac
-                        lectus. Cras ultricies ligula sed magna dictum porta.
+                        Travel Map 是利用百度Api描述 7tiny 的人生移动轨迹的项目。
                     </p>
                 </div>
             </div>
@@ -103,38 +137,63 @@
                 //用于画线的点对象集合
                 let pois = []
 
+                //线条颜色描述
+                if (group['line_color'] != ''&&group['line_color'] != null) {
+                    $("#tb_color_desc").append(
+                        "<tr>" +
+                        "<td class='td1' style='background: " + group['line_color'] + ";'></td>" +
+                        "<td class='td2'>" + group['title'] + "</td>" +
+                        "</tr>"
+                    )
+                }
+
                 for (var i = 0; i < group['points'].length; i++) {
                     //描点
                     let p = group['points'][i]
 
                     let point = new BMap.Point(p['point'][0], p['point'][1]);
-                    pois.push(point)
+
+                    //是否添加到连线里
+                    if (p['in_line'] == true) {
+                        pois.push(point)
+                    }
 
                     //---添加描点
-                    var marker = new BMap.Marker(point);
+                    if (p['show_marker'] == true) {
 
-                    let sContent =
-                        "<h4 style='margin:0 0 5px 0;padding:0.2em 0'>" + p['title'] + "</h4>" +
-                        "<img style='float:right;margin:4px' id='imgDemo" + i + "'src='" + p['img'] + "' width='139' height='104' title='" + p['title'] + "'/>" +
-                        "<p style='margin:0;line-height:1.5;font-size:13px;text-indent:2em'>" + p['content'] + "</p>" +
-                        "</div>";
+                        let icon = null
+                        //自定义图标
+                        if (false) {
+                            icon = new BMap.Symbol(BMap_Symbol_SHAPE_PLANE, {
+                                scale: 0.8,
+                            })
+                        }
 
-                    map.addOverlay(marker); //将点添加到地图中
+                        var marker = new BMap.Marker(point, { icon: icon })
 
-                    marker.addEventListener("click", function (e) {
-                        var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象 
-                        map.openInfoWindow(infoWindow, point); //开启信息窗口
-                    });
+                        let sContent =
+                            "<h4 style='margin:0 0 5px 0;padding:0.2em 0'>" + p['title'] + "</h4>" +
+                            "<img style='float:right;margin:4px' id='imgDemo" + i + "'src='" + p['img'] + "' width='139' height='104' title='" + p['title'] + "'/>" +
+                            "<p style='margin:0;line-height:1.5;font-size:13px;text-indent:2em'>" + p['content'] + "</p>" +
+                            "</div>";
+
+                        map.addOverlay(marker); //将点添加到地图中
+
+                        marker.addEventListener("click", function (e) {
+                            var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象 
+                            map.openInfoWindow(infoWindow, point); //开启信息窗口
+                        });
+                    }
 
                     //---添加标签
-                    if (i == 0 && group['title'] != null && group['title'] != '') {
+                    if (p['title'] != null && p['title'] != '') {
                         let opts = {
                             position: point,    // 指定文本标注所在的地理位置
                             offset: new BMap.Size(10, -20)    //设置文本偏移量
                         }
-                        let label = new BMap.Label(group['title'], opts);  // 创建文本标注对象
+                        let label = new BMap.Label(p['title'], opts);  // 创建文本标注对象
                         label.setStyle({
-                            color: group['line_color'],
+                            color: "#18a45e",//字体颜色
                             fontSize: "8px",
                             height: "15px",
                             lineHeight: "12px",
@@ -144,17 +203,19 @@
                     }
                 }
 
-                //---添加线
-                let polyline = new BMap.Polyline(pois, {
-                    enableEditing: false,//是否启用线编辑，默认为false
-                    enableClicking: false,//是否响应点击事件，默认为true
-                    // icons: [icons],
-                    strokeWeight: group["line_strokeWeight"],//折线的宽度，以像素为单位
-                    strokeOpacity: group['line_strokeOpacity'],//折线的透明度，取值范围0 - 1
-                    strokeColor: group['line_color'] //折线颜色
-                });
+                if (pois.length > 0) {
+                    //---添加线
+                    let polyline = new BMap.Polyline(pois, {
+                        enableEditing: false,//是否启用线编辑，默认为false
+                        enableClicking: false,//是否响应点击事件，默认为true
+                        // icons: [icons],
+                        strokeWeight: group["line_strokeWeight"],//折线的宽度，以像素为单位
+                        strokeOpacity: group['line_strokeOpacity'],//折线的透明度，取值范围0 - 1
+                        strokeColor: group['line_color'] //折线颜色
+                    });
 
-                map.addOverlay(polyline);//增加折线
+                    map.addOverlay(polyline);//增加折线
+                }
             }
         }
     </script>
